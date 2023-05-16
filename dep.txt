@@ -1,0 +1,4 @@
+-- probably completely unnecessary
+- numpy
+- matplotlib
+- opencv-python-headless
