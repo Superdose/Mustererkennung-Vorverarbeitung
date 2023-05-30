@@ -11,6 +11,18 @@ class RectangleType:
     WIDE = 2
 
 
+class Rectangle:
+    def __init__(self, highest_y, lowest_y, leftest_x, rightest_x, rectangle_type):
+        self.highest_y = highest_y
+        self.lowest_y = lowest_y
+        self.leftest_x = leftest_x
+        self.rightest_x = rightest_x
+        self.type = rectangle_type
+
+    def print(self):
+        print("Rectangle: Top is at: " + str(self.lowest_y) + " Bottom is at: " + str(self.highest_y) + " Left is at: " + str(self.leftest_x) + " Right is at: " + str(self.rightest_x))
+
+
 # Returns new start_x -> if start_x is the same as given start_x -> cant extend
 def extend_rectangle_to_the_left(pixel_array, _start_x, _start_y, _end_y, tolerance_threshold):
     black = (0, 0, 0)
@@ -115,7 +127,7 @@ def extend_rectangle_downwards(pixel_array, _start_x, _end_x, _end_y, y_length, 
         target_y = target_y + 1
 
 
-def color_long_rectangle(pixel_array, x, y, x_length, y_length, new_color, tolerance_threshold):
+def color_long_rectangle_and_get_rectangle(pixel_array, x, y, x_length, y_length, new_color, tolerance_threshold):
     black = (0, 0, 0)
     if pixel_array[x, y] != black:
         sys.exit("Can't color a long rectangle, if starting pixel is not black")
@@ -145,8 +157,10 @@ def color_long_rectangle(pixel_array, x, y, x_length, y_length, new_color, toler
             if pixel_array[ii, jj] == black:
                 pixel_array[ii, jj] = new_color
 
+    return Rectangle(end_y, start_y, start_x, end_x, RectangleType.LONG)
 
-def color_wide_rectangle(pixel_array, x, y, x_length, y_length, new_color, tolerance_threshold):
+
+def color_wide_rectangle_and_get_rectangle(pixel_array, x, y, x_length, y_length, new_color, tolerance_threshold):
     black = (0, 0, 0)
     if pixel_array[x, y] != black:
         sys.exit("Can't color a wide rectangle, if starting pixel is not black")
@@ -175,6 +189,8 @@ def color_wide_rectangle(pixel_array, x, y, x_length, y_length, new_color, toler
         for jj in range(start_y, end_y + 1):
             if pixel_array[ii, jj] == black:
                 pixel_array[ii, jj] = new_color
+
+    return Rectangle(end_y, start_y, start_x, end_x, RectangleType.WIDE)
 
 
 def count_connected_pixels_in_row_from(pixel_array, x, y, x_length):
@@ -506,7 +522,7 @@ if upper_left_rectangle[2] == RectangleType.WIDE:
     sys.exit("The first upper left rectangle supposedly is a wide rectangle. "
              "This shouldn't be the case, as this should be the y-axis, which should be a long rectangle")
 
-color_long_rectangle(pixels, upper_left_rectangle[0], upper_left_rectangle[1], im.size[0], im.size[1], (0, 255, 0), 0.1)
+y_axis = color_long_rectangle_and_get_rectangle(pixels, upper_left_rectangle[0], upper_left_rectangle[1], im.size[0], im.size[1], (0, 255, 0), 0.1)
 
 lower_right_rectangle = check_first_lower_right_rectangle_and_get_coordinates(pixels, im.size[0], im.size[1])
 
@@ -514,9 +530,10 @@ if lower_right_rectangle[2] == RectangleType.LONG:
     sys.exit("The first lower right rectangle supposedly is a long rectangle. "
              "This shouldn't be the case, as this should be the x-axis, which should be a wide rectangle")
 
-color_wide_rectangle(pixels, lower_right_rectangle[0], lower_right_rectangle[1], im.size[0], im.size[1], (0, 0, 255), 0.1)
+x_axis = color_wide_rectangle_and_get_rectangle(pixels, lower_right_rectangle[0], lower_right_rectangle[1], im.size[0], im.size[1], (0, 0, 255), 0.1)
 
 
+bar_list = list()
 
 
 for i in range(im.size[0]):
@@ -527,9 +544,9 @@ for i in range(im.size[0]):
             rect_y = rect[1]
             rec_type = rect[2]
             if rec_type == RectangleType.WIDE:
-                color_wide_rectangle(pixels, rect_x, rect_y, im.size[0], im.size[1], (255, 0, 0), 0.1)
+                bar_list.append(color_wide_rectangle_and_get_rectangle(pixels, rect_x, rect_y, im.size[0], im.size[1], (255, 0, 0), 0.1))
             else:
-                color_long_rectangle(pixels, rect_x, rect_y, im.size[0], im.size[1], (255, 0, 0), 0.1)
+                bar_list.append(color_long_rectangle_and_get_rectangle(pixels, rect_x, rect_y, im.size[0], im.size[1], (255, 0, 0), 0.1))
 
 
 im.show()
@@ -540,6 +557,18 @@ merge_filter_stage_pixels_with_axis_and_bar_recognition_pixels(image_filter_stag
 remove_pixels_with_color_if_they_have_no_neighbours_in_a_nine_field(image_filter_stage_pixels, im.size[0], im.size[1], (0, 0, 0))
 
 image_filter_stage_copy.show()
+
+## Print information
+print("*****************************************")
+print("-- X-Axis --")
+x_axis.print()
+print("----")
+print("-- Y-Axis --")
+y_axis.print()
+print("----")
+print("-- Rectangles --")
+for bar in bar_list:
+    bar.print()
 
 ## Read Text
 
